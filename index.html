@@ -172,6 +172,101 @@ p {
   font-weight: bold;
   margin-left: 8px;
 }
+
+/* MODAL STYLES */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-content {
+  background: #0f172a;
+  padding: 40px;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  border: 2px solid #22c55e;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-icon {
+  font-size: 64px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  color: #22c55e;
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.modal-message {
+  color: #e5e7eb;
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+
+.modal-btn {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+.modal-btn-primary {
+  background: #22c55e;
+  color: #022c22;
+}
+
+.modal-btn-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+}
+
+.modal-btn-secondary {
+  background: #334155;
+  color: #e5e7eb;
+  border: 1px solid #475569;
+}
+
+.modal-btn-secondary:hover {
+  background: #475569;
+  transform: translateY(-2px);
+}
 </style>
 </head>
 <body>
@@ -181,18 +276,37 @@ p {
   <h1>RomBak Servers</h1>
 </header>
 
-
 <div class="sidebar" id="sidebar">
     <div class="profile" id="profileArea"></div>
   <ul>
     <li onclick="go('home')">Home</li>
     <li onclick="go('ip')">IP Servers</li>
     <li onclick="go('join')">Join Group</li>
-    <li onclick="go('request')">Saran</li>
+    <li onclick="handleSaranClick()">Saran</li>
   </ul>
 </div>
 
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+<!-- MODAL NOTIFICATION -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content">
+    <div class="modal-icon">🔐</div>
+    <div class="modal-title">Akses Terbatas</div>
+    <div class="modal-message">
+      Anda belum punya akun 😊<br>
+      Apakah Anda ingin membuat akun atau login dulu?
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-primary" onclick="goToAuth()">
+        Login / Buat Akun
+      </button>
+      <button class="modal-btn modal-btn-secondary" onclick="closeAuthModal()">
+        Tidak deh, makasih
+      </button>
+    </div>
+  </div>
+</div>
 
 <section id="home">
   <h2>RomBak Servers</h2>
@@ -207,11 +321,11 @@ p {
   <div class="card">
     <h2>IP Server (Bedrock & Java)</h2>
     <div class="ip-box" id="ip1">play.rombak.xyz</div>
-    <button class="btn" onclick="copyIP('ip1')">Copy IP</button>
+    <button class="btn" onclick="copyIP('ip1', this)">Copy IP</button>
 
     <h2 style="margin-top:16px">IP Server (Bedrock Only)</h2>
     <div class="ip-box" id="ip2">play.rombak.gt.id:29912</div>
-    <button class="btn" onclick="copyIP('ip2')">Copy IP</button>
+    <button class="btn" onclick="copyIP('ip2', this)">Copy IP</button>
   </div>
 </section>
 
@@ -225,7 +339,6 @@ p {
   </div>
 </section>
 
-
 <section id="request">
   <div class="card">
     <h2>Ada Saran?</h2>
@@ -234,7 +347,7 @@ p {
       Ajukan ke admin. Kalau di-acc, ditambahin.
       Kalau enggak… ya ditolak 😁
     </p>
-    <button class="btn">Go to Saran</button>
+    <button class="btn" onclick="window.location.href='/saran.html'">Go to Saran</button>
   </div>
 </section>
 
@@ -279,12 +392,53 @@ function copyIP(id, btnElement) {
     console.error('Gagal menyalin: ', err);
   });
 }
-</script>
 
-<script>
+// --- LOGIC SARAN CLICK ---
+function handleSaranClick() {
+  // Cek apakah user sudah login
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('user_type');
+  
+  // Tutup sidebar jika terbuka
+  if (sidebar.classList.contains("active")) {
+    toggleMenu();
+  }
+  
+  if (!token || !userType) {
+    // Belum login - tampilkan modal
+    showAuthModal();
+  } else {
+    // Sudah login - arahkan ke halaman saran
+    window.location.href = '/saran.html';
+  }
+}
+
+// --- MODAL AUTH FUNCTIONS ---
+function showAuthModal() {
+  const authModal = document.getElementById('authModal');
+  authModal.classList.add('active');
+}
+
+function closeAuthModal() {
+  const authModal = document.getElementById('authModal');
+  authModal.classList.remove('active');
+}
+
+function goToAuth() {
+  // Arahkan ke halaman auth
+  window.location.href = '/auth';
+}
+
+// --- CLOSE MODAL WHEN CLICKING OVERLAY ---
+document.getElementById('authModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeAuthModal();
+  }
+});
+
 // --- LOGIC PROFILE ---
-const isLoggedIn = false;          // false = belum login
-const username = "AlanzobrosDX"; 
+const isLoggedIn = localStorage.getItem('token') ? true : false;
+const username = localStorage.getItem('user_username') || "AlanzobrosDX"; 
 
 function renderProfile() {
   const el = document.getElementById("profileArea");
@@ -294,8 +448,8 @@ function renderProfile() {
       <div class="profile-row">
         <div class="avatar" style="background:#334155; color:#fff">?</div>
         <div class="profile-actions">
-              <button onclick="window.location.href='auth.html'">Login</button>
-    <button onclick="window.location.href='auth.html'">Register</button>
+          <button onclick="window.location.href='/auth'">Login</button>
+          <button onclick="window.location.href='/auth'">Daftar</button>
         </div>
       </div>
     `;
@@ -305,15 +459,24 @@ function renderProfile() {
         <div class="avatar">${username[0]}</div>
         <div class="username">${username}</div>
         <div class="profile-actions">
-          <button title="Pengaturan">⚙</button>
+          <button title="Pengaturan" onclick="logout()">Logout</button>
         </div>
       </div>
     `;
   }
 }
 
+function logout() {
+  if (confirm('Yakin ingin logout?')) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_type');
+    localStorage.removeItem('user_username');
+    location.reload();
+  }
+}
+
 renderProfile();
 </script>
->
+
 </body>
-    </html>
+  </html>
