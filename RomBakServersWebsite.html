@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RomBak Servers</title>
+
+<style>
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+/* HEADER */
+header {
+  background: #020617;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid #1e293b;
+}
+
+.menu-btn {
+  font-size: 26px;
+  cursor: pointer;
+  margin-right: 14px;
+}
+
+header h1 {
+  color: #22c55e;
+  font-size: 18px;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 260px;
+  height: 100%;
+  background: #020617;
+  transition: 0.3s;
+  padding-top: 70px;
+  z-index: 200;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  padding: 14px 20px;
+  border-bottom: 1px solid #1e293b;
+  cursor: pointer;
+}
+
+.sidebar li:hover {
+  background: #1e293b;
+}
+
+/* OVERLAY */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: none;
+  z-index: 150;
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* CONTENT */
+section {
+  padding: 100px 20px;
+  min-height: 100vh;
+}
+
+h2 {
+  color: #22c55e;
+  margin-bottom: 10px;
+}
+
+p {
+  opacity: .9;
+}
+
+/* CARD */
+.card {
+  background: #0f172a;
+  padding: 20px;
+  border-radius: 14px;
+  max-width: 600px;
+  margin: auto;
+}
+
+/* BUTTON */
+.btn {
+  margin-top: 12px;
+  padding: 12px 20px;
+  background: #22c55e;
+  color: #022c22;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn:hover {
+  opacity: .85;
+}
+
+/* IP BOX */
+.ip-box {
+  background: #020617;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 10px 0;
+  user-select: all;
+}
+
+.profile {
+  padding: 20px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #022c22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.username {
+  margin-left: 10px;
+  flex: 1;
+}
+
+.profile-actions button {
+  background: none;
+  border: none;
+  color: #22c55e;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 8px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+  <h1>RomBak Servers</h1>
+</header>
+
+
+<div class="sidebar" id="sidebar">
+    <div class="profile" id="profileArea"></div>
+  <ul>
+    <li onclick="go('home')">Home</li>
+    <li onclick="go('ip')">IP Servers</li>
+    <li onclick="go('join')">Join Group</li>
+    <li onclick="go('request')">Saran</li>
+  </ul>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+<section id="home">
+  <h2>RomBak Servers</h2>
+  <p>
+    Server Minecraft yang penuh tantangan, komunitas edan,
+    dan banyak event menarik.
+  </p>
+  <button class="btn" onclick="go('ip')">Gabung</button>
+</section>
+
+<section id="ip">
+  <div class="card">
+    <h2>IP Server (Bedrock & Java)</h2>
+    <div class="ip-box" id="ip1">play.rombak.xyz</div>
+    <button class="btn" onclick="copyIP('ip1')">Copy IP</button>
+
+    <h2 style="margin-top:16px">IP Server (Bedrock Only)</h2>
+    <div class="ip-box" id="ip2">play.rombak.gt.id:29912</div>
+    <button class="btn" onclick="copyIP('ip2')">Copy IP</button>
+  </div>
+</section>
+
+<section id="join">
+  <div class="card">
+    <h2>Grup Kami</h2>
+    <p>Join grup jika kamu minat di server kami :)</p>
+    <button class="btn">Discord</button>
+    
+    <button class="btn" onclick="window.open('https://chat.whatsapp.com/EKju4w89FNwL554Hb2Jjgh?mode=gi_t', '_blank')">WhatsApp</button>
+  </div>
+</section>
+
+
+<section id="request">
+  <div class="card">
+    <h2>Ada Saran?</h2>
+    <p>
+      Mau addon kamu ada di server? atau ada kendala?
+      Ajukan ke admin. Kalau di-acc, ditambahin.
+      Kalau enggak… ya ditolak 😁
+    </p>
+    <button class="btn">Go to Saran</button>
+  </div>
+</section>
+
+<script>
+// --- LOGIC MENU ---
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+
+function toggleMenu() {
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+
+function go(id) {
+  // Cek apakah sidebar sedang terbuka? Jika ya, tutup dulu.
+  if (sidebar.classList.contains("active")) {
+    toggleMenu();
+  }
+  // Scroll ke tujuan
+  document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+}
+
+// --- LOGIC COPY IP ---
+function copyIP(id, btnElement) {
+  const text = document.getElementById(id).innerText;
+  
+  // Salin ke clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    // Simpan teks asli tombol
+    const originalText = btnElement.innerText;
+    
+    // Ubah tampilan tombol untuk memberi tahu user
+    btnElement.innerText = "IP Disalin! ✅";
+    btnElement.classList.add("copied");
+    
+    // Kembalikan ke semula setelah 2 detik
+    setTimeout(() => {
+      btnElement.innerText = originalText;
+      btnElement.classList.remove("copied");
+    }, 2000);
+  }).catch(err => {
+    console.error('Gagal menyalin: ', err);
+  });
+}
+</script>
+
+<script>
+// --- LOGIC PROFILE ---
+const isLoggedIn = false;          // false = belum login
+const username = "AlanzobrosDX"; 
+
+function renderProfile() {
+  const el = document.getElementById("profileArea");
+
+  if (!isLoggedIn) {
+    el.innerHTML = `
+      <div class="profile-row">
+        <div class="avatar" style="background:#334155; color:#fff">?</div>
+        <div class="profile-actions">
+          <button onclick="alert('Fitur Login belum dibuat')">Login</button>
+          <button onclick="alert('Fitur Daftar belum dibuat')">Daftar</button>
+        </div>
+      </div>
+    `;
+  } else {
+    el.innerHTML = `
+      <div class="profile-row">
+        <div class="avatar">${username[0]}</div>
+        <div class="username">${username}</div>
+        <div class="profile-actions">
+          <button title="Pengaturan">⚙</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+renderProfile();
+</script>
+>
+</body>
+</html>
