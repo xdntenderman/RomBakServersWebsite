@@ -147,6 +147,11 @@ input:focus, select:focus {
   transform: translateY(0);
 }
 
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* CHECKBOX */
 .checkbox-group {
   display: flex;
@@ -198,19 +203,20 @@ input[type="checkbox"] {
   display: block;
 }
 
-/* LOADING SPINNER */
-.spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255,255,255,.3);
-  border-top: 2px solid #22c55e;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+/* OWNER WARNING */
+.owner-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fcd34d;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  border-left: 3px solid #f59e0b;
+  display: none;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.owner-warning.show {
+  display: block;
 }
 
 /* RESPONSIVE */
@@ -237,9 +243,10 @@ input[type="checkbox"] {
   <div class="tab-container">
     <button class="tab-btn active" onclick="switchTab('login')">Login</button>
     <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    <button class="tab-btn" onclick="switchTab('owner')" title="Owner Only">🔐 Owner</button>
   </div>
 
-  <!-- LOGIN FORM -->
+  <!-- LOGIN FORM (MEMBER) -->
   <form id="loginForm" class="form-container active">
     <div class="error-message" id="loginError"></div>
     <div class="success-message" id="loginSuccess"></div>
@@ -292,8 +299,6 @@ input[type="checkbox"] {
       <select id="registerRole" name="role" required>
         <option value="">Pilih role</option>
         <option value="player">Player</option>
-        <option value="admin">Admin</option>
-        <option value="moderator">Moderator</option>
       </select>
     </div>
 
@@ -303,6 +308,30 @@ input[type="checkbox"] {
     </div>
 
     <button type="submit" class="submit-btn" id="registerBtn">Register</button>
+  </form>
+
+  <!-- OWNER LOGIN FORM -->
+  <form id="ownerForm" class="form-container">
+    <div class="owner-warning" id="ownerWarning">⚠️ Ini adalah area khusus Owner. Akses terbatas hanya untuk XDNTEnderMan.</div>
+    <div class="error-message" id="ownerError"></div>
+    <div class="success-message" id="ownerSuccess"></div>
+
+    <div class="form-group">
+      <label for="ownerUsername">Username Owner</label>
+      <input type="text" id="ownerUsername" name="username" placeholder="XDNTEnderMan" readonly>
+    </div>
+
+    <div class="form-group">
+      <label for="ownerPassword">Master Password</label>
+      <input type="password" id="ownerPassword" name="password" placeholder="Masukkan master password" required>
+    </div>
+
+    <div class="form-group checkbox-group">
+      <input type="checkbox" id="ownerRemember" name="remember">
+      <label for="ownerRemember">Ingat login saya (30 hari)</label>
+    </div>
+
+    <button type="submit" class="submit-btn" id="ownerBtn">Login sebagai Owner</button>
   </form>
 </div>
 
@@ -319,13 +348,18 @@ function switchTab(tab) {
     el.classList.remove('active');
   });
 
-  // Show selected form
+  // Show selected form and set active tab
   if (tab === 'login') {
     document.getElementById('loginForm').classList.add('active');
-    document.querySelector('.tab-btn:first-child').classList.add('active');
+    document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
   } else if (tab === 'register') {
     document.getElementById('registerForm').classList.add('active');
-    document.querySelector('.tab-btn:last-child').classList.add('active');
+    document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+  } else if (tab === 'owner') {
+    document.getElementById('ownerForm').classList.add('active');
+    document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+    document.getElementById('ownerWarning').classList.add('show');
+    document.getElementById('ownerUsername').value = 'XDNTEnderMan';
   }
 
   // Clear messages
@@ -342,18 +376,22 @@ function clearMessages() {
 // --- SHOW ERROR ---
 function showError(formType, message) {
   const errorEl = document.getElementById(`${formType}Error`);
-  errorEl.innerText = message;
-  errorEl.classList.add('show');
+  if (errorEl) {
+    errorEl.innerText = message;
+    errorEl.classList.add('show');
+  }
 }
 
 // --- SHOW SUCCESS ---
 function showSuccess(formType, message) {
   const successEl = document.getElementById(`${formType}Success`);
-  successEl.innerText = message;
-  successEl.classList.add('show');
+  if (successEl) {
+    successEl.innerText = message;
+    successEl.classList.add('show');
+  }
 }
 
-// --- LOGIN HANDLER ---
+// --- MEMBER LOGIN HANDLER ---
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMessages();
@@ -379,6 +417,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     if (response.ok) {
       showSuccess('login', '✅ Login berhasil! Redirecting...');
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user_type', 'member');
       if (remember) {
         localStorage.setItem('remember_user', username);
       }
@@ -405,9 +444,8 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   const email = document.getElementById('registerEmail').value.trim();
   const password = document.getElementById('registerPassword').value;
   const confirmPassword = document.getElementById('registerConfirmPassword').value;
-  const role = document.getElementById('registerRole').value;
 
-  // VALIDATION
+  // VALIDASI INPUT
   if (username.length < 3) {
     showError('register', 'Username minimal 3 karakter');
     return;
@@ -423,6 +461,12 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     return;
   }
 
+  // Prevent registering as XDNTEnderMan
+  if (username.toLowerCase() === 'xdntenderman') {
+    showError('register', 'Username tidak tersedia');
+    return;
+  }
+
   const btn = document.getElementById('registerBtn');
   const originalText = btn.innerText;
   btn.innerText = '⏳ Loading...';
@@ -432,7 +476,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     const response = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, role })
+      body: JSON.stringify({ username, email, password, role: 'player' })
     });
 
     const data = await response.json();
@@ -454,14 +498,82 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   }
 });
 
+// --- OWNER LOGIN HANDLER ---
+document.getElementById('ownerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMessages();
+
+  const password = document.getElementById('ownerPassword').value;
+  const remember = document.getElementById('ownerRemember').checked;
+
+  // Validasi password minimal
+  if (password.length < 1) {
+    showError('owner', 'Password harus diisi');
+    return;
+  }
+
+  const btn = document.getElementById('ownerBtn');
+  const originalText = btn.innerText;
+  btn.innerText = '⏳ Verifying...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch('/api/owner-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        username: 'XDNTEnderMan', 
+        password: password,
+        remember: remember
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showSuccess('owner', '✅ Owner Login berhasil! Redirecting...');
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user_type', 'owner');
+      localStorage.setItem('owner_username', 'XDNTEnderMan');
+      
+      if (remember) {
+        localStorage.setItem('owner_remember', 'true');
+        localStorage.setItem('owner_token_expiry', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).getTime());
+      }
+      
+      setTimeout(() => {
+        window.location.href = '/owner.html';
+      }, 1500);
+    } else {
+      showError('owner', data.message || 'Password Owner salah!');
+    }
+  } catch (err) {
+    showError('owner', 'Terjadi error: ' + err.message);
+  } finally {
+    btn.innerText = originalText;
+    btn.disabled = false;
+  }
+});
+
 // --- AUTO-FILL LOGIN (jika ada remember) ---
 window.addEventListener('DOMContentLoaded', () => {
   const remember = localStorage.getItem('remember_user');
   if (remember) {
     document.getElementById('loginUsername').value = remember;
   }
+
+  // Check if owner token still valid
+  const ownerRemember = localStorage.getItem('owner_remember');
+  if (ownerRemember === 'true') {
+    const expiry = localStorage.getItem('owner_token_expiry');
+    if (expiry && new Date().getTime() < parseInt(expiry)) {
+      // Auto redirect to owner dashboard jika still valid
+      // Uncomment jika mau auto login:
+      // window.location.href = '/owner.html';
+    }
+  }
 });
 </script>
 
 </body>
-        </html>
+      </html>
