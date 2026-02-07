@@ -68,10 +68,13 @@ header h1 {
   padding: 14px 20px;
   border-bottom: 1px solid #1e293b;
   cursor: pointer;
+  color: #e5e7eb;
+  transition: 0.3s;
 }
 
 .sidebar li:hover {
   background: #1e293b;
+  color: #22c55e;
 }
 
 /* OVERLAY */
@@ -121,10 +124,12 @@ p {
   border-radius: 10px;
   font-weight: bold;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 .btn:hover {
   opacity: .85;
+  transform: translateY(-2px);
 }
 
 /* IP BOX */
@@ -171,6 +176,11 @@ p {
   cursor: pointer;
   font-weight: bold;
   margin-left: 8px;
+  transition: 0.3s;
+}
+
+.profile-actions button:hover {
+  opacity: 0.8;
 }
 
 /* MODAL STYLES */
@@ -267,6 +277,22 @@ p {
   background: #475569;
   transform: translateY(-2px);
 }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 85%;
+    padding: 30px;
+  }
+
+  .modal-icon {
+    font-size: 48px;
+  }
+
+  .modal-title {
+    font-size: 20px;
+  }
+}
 </style>
 </head>
 <body>
@@ -277,12 +303,12 @@ p {
 </header>
 
 <div class="sidebar" id="sidebar">
-    <div class="profile" id="profileArea"></div>
+  <div class="profile" id="profileArea"></div>
   <ul>
-    <li onclick="go('home')">Home</li>
-    <li onclick="go('ip')">IP Servers</li>
-    <li onclick="go('join')">Join Group</li>
-    <li onclick="handleSaranClick()">Saran</li>
+    <li onclick="go('home')">🏠 Home</li>
+    <li onclick="go('ip')">📡 IP Servers</li>
+    <li onclick="go('join')">👥 Join Group</li>
+    <li onclick="handleSaranClick()">💬 Saran</li>
   </ul>
 </div>
 
@@ -333,7 +359,7 @@ p {
   <div class="card">
     <h2>Grup Kami</h2>
     <p>Join grup jika kamu minat di server kami :)</p>
-    <button class="btn">Discord</button>
+    <button class="btn" onclick="window.open('https://discord.gg/rombak', '_blank')">Discord</button>
     
     <button class="btn" onclick="window.open('https://chat.whatsapp.com/EKju4w89FNwL554Hb2Jjgh?mode=gi_t', '_blank')">WhatsApp</button>
   </div>
@@ -347,7 +373,7 @@ p {
       Ajukan ke admin. Kalau di-acc, ditambahin.
       Kalau enggak… ya ditolak 😁
     </p>
-    <button class="btn" onclick="window.location.href='/saran.html'">Go to Saran</button>
+    <button class="btn" onclick="handleGoToSaran()">Go to Saran</button>
   </div>
 </section>
 
@@ -393,7 +419,7 @@ function copyIP(id, btnElement) {
   });
 }
 
-// --- LOGIC SARAN CLICK ---
+// --- LOGIC SARAN CLICK (dari sidebar) ---
 function handleSaranClick() {
   // Cek apakah user sudah login
   const token = localStorage.getItem('token');
@@ -409,7 +435,22 @@ function handleSaranClick() {
     showAuthModal();
   } else {
     // Sudah login - arahkan ke halaman saran
-    window.location.href = '/saran.html';
+    window.location.href = './saran.html';
+  }
+}
+
+// --- LOGIC GO TO SARAN (dari beranda) ---
+function handleGoToSaran() {
+  // Cek apakah user sudah login
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('user_type');
+  
+  if (!token || !userType) {
+    // Belum login - tampilkan modal
+    showAuthModal();
+  } else {
+    // Sudah login - arahkan ke halaman saran
+    window.location.href = './saran.html';
   }
 }
 
@@ -425,8 +466,8 @@ function closeAuthModal() {
 }
 
 function goToAuth() {
-  // Arahkan ke halaman auth
-  window.location.href = '/auth';
+  // Arahkan ke halaman auth dengan relative path
+  window.location.href = './auth.html';
 }
 
 // --- CLOSE MODAL WHEN CLICKING OVERLAY ---
@@ -437,29 +478,32 @@ document.getElementById('authModal').addEventListener('click', function(e) {
 });
 
 // --- LOGIC PROFILE ---
-const isLoggedIn = localStorage.getItem('token') ? true : false;
-const username = localStorage.getItem('user_username') || "AlanzobrosDX"; 
-
 function renderProfile() {
   const el = document.getElementById("profileArea");
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('user_type');
+  const username = localStorage.getItem('user_username');
+  
+  const isLoggedIn = token && userType;
 
   if (!isLoggedIn) {
     el.innerHTML = `
       <div class="profile-row">
         <div class="avatar" style="background:#334155; color:#fff">?</div>
         <div class="profile-actions">
-          <button onclick="window.location.href='/auth'">Login</button>
-          <button onclick="window.location.href='/auth'">Daftar</button>
+          <button onclick="window.location.href='./auth.html'" title="Login">Login</button>
+          <button onclick="window.location.href='./auth.html'" title="Daftar">Daftar</button>
         </div>
       </div>
     `;
   } else {
+    const displayName = username || "User";
     el.innerHTML = `
       <div class="profile-row">
-        <div class="avatar">${username[0]}</div>
-        <div class="username">${username}</div>
+        <div class="avatar">${displayName.charAt(0).toUpperCase()}</div>
+        <div class="username">${displayName}</div>
         <div class="profile-actions">
-          <button title="Pengaturan" onclick="logout()">Logout</button>
+          <button title="Logout" onclick="logout()">Logout</button>
         </div>
       </div>
     `;
@@ -474,9 +518,12 @@ function logout() {
     location.reload();
   }
 }
- 
-renderProfile();
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', function() {
+  renderProfile();
+});
 </script>
 
 </body>
-  </html>
+      </html>
