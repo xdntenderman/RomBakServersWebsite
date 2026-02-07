@@ -1,103 +1,467 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login and Register</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        h2 {
-            text-align: center;
-        }
-        .form-container {
-            max-width: 300px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .form-group button {
-            width: 100%;
-            padding: 10px;
-            background-color: #5cb85c;
-            border: none;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .form-group button:hover {
-            background-color: #4cae4c;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login & Register - RomBak Servers</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #020617;
+  color: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 400px;
+  background: #0f172a;
+  border-radius: 14px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.5);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.auth-header h1 {
+  color: #22c55e;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.auth-header p {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* TAB NAVIGATION */
+.tab-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #1e293b;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-weight: bold;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: 0.3s;
+  font-size: 14px;
+}
+
+.tab-btn.active {
+  color: #22c55e;
+  border-bottom-color: #22c55e;
+}
+
+.tab-btn:hover {
+  color: #e5e7eb;
+}
+
+/* FORM CONTAINER */
+.form-container {
+  display: none;
+}
+
+.form-container.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* FORM GROUP */
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e5e7eb;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+}
+
+/* SUBMIT BUTTON */
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #22c55e;
+  color: #022c22;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+/* CHECKBOX */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  margin: 0;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+/* ERROR MESSAGE */
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  display: none;
+  border-left: 3px solid #ef4444;
+}
+
+.error-message.show {
+  display: block;
+}
+
+/* SUCCESS MESSAGE */
+.success-message {
+  background: rgba(34, 197, 94, 0.1);
+  color: #86efac;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  display: none;
+  border-left: 3px solid #22c55e;
+}
+
+.success-message.show {
+  display: block;
+}
+
+/* LOADING SPINNER */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top: 2px solid #22c55e;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .auth-container {
+    padding: 30px 20px;
+  }
+
+  .auth-header h1 {
+    font-size: 20px;
+  }
+}
+</style>
 </head>
 <body>
-    <h2>Login</h2>
-    <div class="form-container">
-        <form onsubmit="return login();">
-            <div class="form-group">
-                <label for="login-email">Email:</label>
-                <input type="email" id="login-email" required>
-            </div>
-            <div class="form-group">
-                <label for="login-password">Password:</label>
-                <input type="password" id="login-password" required>
-            </div>
-            <div class="form-group">
-                <button type="submit">Login</button>
-            </div>
-        </form>
-    </div>
-    <h2>Register</h2>
-    <div class="form-container">
-        <form onsubmit="return register();">
-            <div class="form-group">
-                <label for="register-email">Email:</label>
-                <input type="email" id="register-email" required>
-            </div>
-            <div class="form-group">
-                <label for="register-password">Password:</label>
-                <input type="password" id="register-password" required>
-            </div>
-            <div class="form-group">
-                <button type="submit">Register</button>
-            </div>
-        </form>
-    </div>
-    <script>
-        function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            // Implement login logic here
-            alert(`Login attempted with Email: ${email}`);
-            return false; // prevent form submission for demo
-        }
 
-        function register() {
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            // Implement registration logic here
-            alert(`Registration attempted with Email: ${email}`);
-            return false; // prevent form submission for demo
-        }
-    </script>
+<div class="auth-container">
+  <div class="auth-header">
+    <h1>🎮 RomBak Servers</h1>
+    <p>Login atau Daftar untuk bergabung</p>
+  </div>
+
+  <!-- TAB NAVIGATION -->
+  <div class="tab-container">
+    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+  </div>
+
+  <!-- LOGIN FORM -->
+  <form id="loginForm" class="form-container active">
+    <div class="error-message" id="loginError"></div>
+    <div class="success-message" id="loginSuccess"></div>
+
+    <div class="form-group">
+      <label for="loginUsername">Username atau Email</label>
+      <input type="text" id="loginUsername" name="username" placeholder="Masukkan username atau email" required>
+    </div>
+
+    <div class="form-group">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" name="password" placeholder="Masukkan password" required>
+    </div>
+
+    <div class="form-group checkbox-group">
+      <input type="checkbox" id="rememberMe" name="remember">
+      <label for="rememberMe">Ingat saya</label>
+    </div>
+
+    <button type="submit" class="submit-btn" id="loginBtn">Login</button>
+  </form>
+
+  <!-- REGISTER FORM -->
+  <form id="registerForm" class="form-container">
+    <div class="error-message" id="registerError"></div>
+    <div class="success-message" id="registerSuccess"></div>
+
+    <div class="form-group">
+      <label for="registerUsername">Username</label>
+      <input type="text" id="registerUsername" name="username" placeholder="Pilih username" required>
+    </div>
+
+    <div class="form-group">
+      <label for="registerEmail">Email</label>
+      <input type="email" id="registerEmail" name="email" placeholder="Masukkan email" required>
+    </div>
+
+    <div class="form-group">
+      <label for="registerPassword">Password</label>
+      <input type="password" id="registerPassword" name="password" placeholder="Minimal 6 karakter" required minlength="6">
+    </div>
+
+    <div class="form-group">
+      <label for="registerConfirmPassword">Konfirmasi Password</label>
+      <input type="password" id="registerConfirmPassword" name="confirmPassword" placeholder="Ulangi password" required>
+    </div>
+
+    <div class="form-group">
+      <label for="registerRole">Role</label>
+      <select id="registerRole" name="role" required>
+        <option value="">Pilih role</option>
+        <option value="player">Player</option>
+        <option value="admin">Admin</option>
+        <option value="moderator">Moderator</option>
+      </select>
+    </div>
+
+    <div class="form-group checkbox-group">
+      <input type="checkbox" id="agreeTerms" name="agree" required>
+      <label for="agreeTerms">Setuju dengan syarat & ketentuan</label>
+    </div>
+
+    <button type="submit" class="submit-btn" id="registerBtn">Register</button>
+  </form>
+</div>
+
+<script>
+// --- TAB SWITCHING ---
+function switchTab(tab) {
+  // Hide all forms
+  document.querySelectorAll('.form-container').forEach(el => {
+    el.classList.remove('active');
+  });
+
+  // Remove active from all tabs
+  document.querySelectorAll('.tab-btn').forEach(el => {
+    el.classList.remove('active');
+  });
+
+  // Show selected form
+  if (tab === 'login') {
+    document.getElementById('loginForm').classList.add('active');
+    document.querySelector('.tab-btn:first-child').classList.add('active');
+  } else if (tab === 'register') {
+    document.getElementById('registerForm').classList.add('active');
+    document.querySelector('.tab-btn:last-child').classList.add('active');
+  }
+
+  // Clear messages
+  clearMessages();
+}
+
+// --- CLEAR MESSAGES ---
+function clearMessages() {
+  document.querySelectorAll('.error-message, .success-message').forEach(el => {
+    el.classList.remove('show');
+  });
+}
+
+// --- SHOW ERROR ---
+function showError(formType, message) {
+  const errorEl = document.getElementById(`${formType}Error`);
+  errorEl.innerText = message;
+  errorEl.classList.add('show');
+}
+
+// --- SHOW SUCCESS ---
+function showSuccess(formType, message) {
+  const successEl = document.getElementById(`${formType}Success`);
+  successEl.innerText = message;
+  successEl.classList.add('show');
+}
+
+// --- LOGIN HANDLER ---
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMessages();
+
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const remember = document.getElementById('rememberMe').checked;
+
+  const btn = document.getElementById('loginBtn');
+  const originalText = btn.innerText;
+  btn.innerText = '⏳ Loading...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, remember })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showSuccess('login', '✅ Login berhasil! Redirecting...');
+      localStorage.setItem('token', data.token);
+      if (remember) {
+        localStorage.setItem('remember_user', username);
+      }
+      setTimeout(() => {
+        window.location.href = '/index.html';
+      }, 1500);
+    } else {
+      showError('login', data.message || 'Login gagal');
+    }
+  } catch (err) {
+    showError('login', 'Terjadi error: ' + err.message);
+  } finally {
+    btn.innerText = originalText;
+    btn.disabled = false;
+  }
+});
+
+// --- REGISTER HANDLER ---
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMessages();
+
+  const username = document.getElementById('registerUsername').value.trim();
+  const email = document.getElementById('registerEmail').value.trim();
+  const password = document.getElementById('registerPassword').value;
+  const confirmPassword = document.getElementById('registerConfirmPassword').value;
+  const role = document.getElementById('registerRole').value;
+
+  // VALIDATION
+  if (username.length < 3) {
+    showError('register', 'Username minimal 3 karakter');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showError('register', 'Password tidak cocok');
+    return;
+  }
+
+  if (!document.getElementById('agreeTerms').checked) {
+    showError('register', 'Anda harus setuju dengan syarat & ketentuan');
+    return;
+  }
+
+  const btn = document.getElementById('registerBtn');
+  const originalText = btn.innerText;
+  btn.innerText = '⏳ Loading...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, role })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showSuccess('register', '✅ Akun berhasil dibuat! Silakan login.');
+      setTimeout(() => {
+        switchTab('login');
+        document.getElementById('registerForm').reset();
+      }, 1500);
+    } else {
+      showError('register', data.message || 'Registrasi gagal');
+    }
+  } catch (err) {
+    showError('register', 'Terjadi error: ' + err.message);
+  } finally {
+    btn.innerText = originalText;
+    btn.disabled = false;
+  }
+});
+
+// --- AUTO-FILL LOGIN (jika ada remember) ---
+window.addEventListener('DOMContentLoaded', () => {
+  const remember = localStorage.getItem('remember_user');
+  if (remember) {
+    document.getElementById('loginUsername').value = remember;
+  }
+});
+</script>
+
 </body>
-</html>
+        </html>
