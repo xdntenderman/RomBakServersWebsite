@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RomBak Servers</title>
+
+<style>
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("image/bg.jpg"); /* ganti sesuai gambar */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.6; /* 60% */
+  z-index: -1;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}
+
+@media (max-width: 768px) {
+  body::before {
+    background-position: center top;
+  }
+}
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+/* HEADER */
+header {
+  background: #020617;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid #1e293b;
+}
+
+.menu-btn {
+  font-size: 26px;
+  cursor: pointer;
+  margin-right: 14px;
+}
+
+header h1 {
+  color: #22c55e;
+  font-size: 18px;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 260px;
+  height: 100%;
+  background: #020617;
+  transition: 0.3s;
+  padding-top: 70px;
+  z-index: 200;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  padding: 14px 20px;
+  border-bottom: 1px solid #1e293b;
+  cursor: pointer;
+  color: #e5e7eb;
+  transition: 0.3s;
+}
+
+.sidebar li:hover {
+  background: #1e293b;
+  color: #22c55e;
+}
+
+/* OVERLAY */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: none;
+  z-index: 150;
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* CONTENT */
+section {
+  padding: 100px 20px;
+  min-height: 100vh;
+}
+
+h2 {
+  color: #22c55e;
+  margin-bottom: 10px;
+}
+
+p {
+  opacity: .9;
+}
+
+/* CARD */
+.card {
+  background: #0f172a;
+  padding: 20px;
+  border-radius: 14px;
+  max-width: 600px;
+  margin: auto;
+}
+
+/* BUTTON */
+.btn {
+  margin-top: 12px;
+  padding: 12px 20px;
+  background: #22c55e;
+  color: #022c22;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  opacity: .85;
+  transform: translateY(-2px);
+}
+
+/* IP BOX */
+.ip-box {
+  background: #020617;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 10px 0;
+  user-select: all;
+}
+
+.profile {
+  padding: 20px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #022c22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.username {
+  margin-left: 10px;
+  flex: 1;
+}
+
+.profile-actions button {
+  background: none;
+  border: none;
+  color: #22c55e;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 8px;
+  transition: 0.3s;
+}
+
+.profile-actions button:hover {
+  opacity: 0.8;
+}
+
+/* MODAL STYLES */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-content {
+  background: #0f172a;
+  padding: 40px;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  border: 2px solid #22c55e;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-icon {
+  font-size: 64px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  color: #22c55e;
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.modal-message {
+  color: #e5e7eb;
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+
+.modal-btn {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+.modal-btn-primary {
+  background: #22c55e;
+  color: #022c22;
+}
+
+.modal-btn-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+}
+
+.modal-btn-secondary {
+  background: #334155;
+  color: #e5e7eb;
+  border: 1px solid #475569;
+}
+
+.modal-btn-secondary:hover {
+  background: #475569;
+  transform: translateY(-2px);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 85%;
+    padding: 30px;
+  }
+
+  .modal-icon {
+    font-size: 48px;
+  }
+
+  .modal-title {
+    font-size: 20px;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+  <h1>RomBak Servers</h1>
+</header>
+
+<div class="sidebar" id="sidebar">
+  <div class="profile" id="profileArea"></div>
+  <ul>
+    <li onclick="go('home')">🏠 Home</li>
+    <li onclick="go('ip')">📡 IP Servers</li>
+    <li onclick="go('join')">👥 Join Group</li>
+    <li onclick="handleSaranClick()">💬 Saran</li>
+  </ul>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content">
+    <div class="modal-icon">🔐</div>
+    <div class="modal-title">Akses Terbatas</div>
+    <div class="modal-message">
+      Anda belum punya akun 😊<br>
+      Apakah Anda ingin membuat akun atau login dulu?
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-primary" onclick="goToAuth()">
+        Login / Buat Akun
+      </button>
+      <button class="modal-btn modal-btn-secondary" onclick="closeAuthModal()">
+        Tidak deh, makasih
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal-content">
+    <div class="modal-icon">🚪</div>
+    <div class="modal-title">Logout Akun?</div>
+
+    <div class="modal-message">
+      Yakin ingin logout ni?<br>
+      <small>Sayang banget 😢</small>
+    </div>
+
+    <div class="modal-buttons"> <button class="modal-btn modal-btn-primary" onclick="confirmLogout()">
+        Iya mau logout
+      </button>
+      <button class="modal-btn modal-btn-secondary" onclick="closeLogoutModal()">
+        Tidak. Stay disini
+      </button>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+  </div>
+</div>
+
+<section id="home">
+  <h2>RomBak Servers</h2>
+  <p>
+    Server Minecraft yang penuh tantangan, komunitas edan,
+    dan banyak event menarik.
+  </p>
+  <button class="btn" onclick="go('ip')">Gabung</button>
+</section>
+
+<section id="ip">
+  <div class="card">
+    <h2>IP Server (Bedrock & Java)</h2>
+    <div class="ip-box" id="ip1">play.rombak.xyz</div>
+    <button class="btn" onclick="copyIP('ip1', this)">Copy IP</button>
+
+    <h2 style="margin-top:16px">IP Server (Bedrock Only)</h2>
+    <div class="ip-box" id="ip2">play.rombak.gt.id:29912</div>
+    <button class="btn" onclick="copyIP('ip2', this)">Copy IP</button>
+  </div>
+</section>
+
+<section id="join">
+  <div class="card">
+    <h2>Grup Kami</h2>
+    <p>Join grup jika kamu minat di server kami :)</p>
+    <button class="btn" onclick="window.open('https://discord.gg/rombak', '_blank')">Discord</button>
+    
+    <button class="btn" onclick="window.open('https://chat.whatsapp.com/EKju4w89FNwL554Hb2Jjgh?mode=gi_t', '_blank')">WhatsApp</button>
+  </div>
+</section>
+
+<section id="request">
+  <div class="card">
+    <h2>Ada Saran?</h2>
+    <p>
+      Mau addon kamu ada di server? atau ada kendala?
+      Ajukan ke admin. Kalau di-acc, ditambahin.
+      Kalau enggak… ya ditolak 😁
+    </p>
+    <button class="btn" onclick="handleGoToSaran()">Go to Saran</button>
+  </div>
+</section>
+
+<script>
+// --- LOGIC MENU ---
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+
+function toggleMenu() {
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+
+function go(id) {
+  // Cek apakah sidebar sedang terbuka? Jika ya, tutup dulu.
+  if (sidebar.classList.contains("active")) {
+    toggleMenu();
+  }
+  // Scroll ke tujuan
+  document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+}
+
+// --- LOGIC COPY IP ---
+function copyIP(id, btnElement) {
+  const text = document.getElementById(id).innerText;
+  
+  // Salin ke clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    // Simpan teks asli tombol
+    const originalText = btnElement.innerText;
+    
+    // Ubah tampilan tombol untuk memberi tahu user
+    btnElement.innerText = "IP Disalin! ✅";
+    btnElement.classList.add("copied");
+    
+    // Kembalikan ke semula setelah 2 detik
+    setTimeout(() => {
+      btnElement.innerText = originalText;
+      btnElement.classList.remove("copied");
+    }, 2000);
+  }).catch(err => {
+    console.error('Gagal menyalin: ', err);
+  });
+}
+
+// --- LOGIC SARAN CLICK (dari sidebar) ---
+function handleSaranClick() {
+  // Cek apakah user sudah login
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('user_type');
+  
+  // Tutup sidebar jika terbuka
+  if (sidebar.classList.contains("active")) {
+    toggleMenu();
+  }
+  
+  if (!token || !userType) {
+    // Belum login - tampilkan modal
+    showAuthModal();
+  } else {
+    // Sudah login - arahkan ke halaman saran
+    window.location.href = './saran.html';
+  }
+}
+
+// --- LOGIC GO TO SARAN (dari beranda) ---
+function handleGoToSaran() {
+  // Cek apakah user sudah login
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('user_type');
+  
+  if (!token || !userType) {
+    // Belum login - tampilkan modal
+    showAuthModal();
+  } else {
+    // Sudah login - arahkan ke halaman saran
+    window.location.href = './saran.html';
+  }
+}
+// --- LOGIC LOGOUT MODAL ---
+function showLogoutModal() {
+  // 1. Tutup sidebar (opsional, kalau lu mau sidebar tetep buka, HAPUS 2 baris ini)
+  // document.getElementById('sidebar')?.classList.remove('active'); 
+  // document.getElementById('overlay')?.classList.remove('active');
+
+  // 2. Tutup Auth modal kalau kebuka (biar gak numpuk)
+  document.getElementById('authModal')?.classList.remove('active');
+
+  // 3. Buka Logout modal (pastikan ID nya logoutModal)
+  const logoutModal = document.getElementById('logoutModal');
+  if(logoutModal) {
+      logoutModal.classList.add('active');
+  }
+}
+
+function closeLogoutModal() {
+  document.getElementById('logoutModal').classList.remove('active');
+}
+
+function toggleMenu() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+}
+// --- MODAL AUTH FUNCTIONS ---
+function showAuthModal() {
+  const authModal = document.getElementById('authModal');
+  authModal.classList.add('active');
+}
+
+function closeAuthModal() {
+  const authModal = document.getElementById('authModal');
+  authModal.classList.remove('active');
+}
+
+function goToAuth() {
+  // Arahkan ke halaman auth dengan relative path
+  window.location.href = './auth.html';
+}
+function showLogoutModal() {
+  // tutup auth modal kalau ada
+  document.getElementById('authModal')?.classList.remove('active');
+
+  // tutup menu samping kalau kebuka
+  document.getElementById('sidebar')?.classList.remove('active');
+  document.getElementById('overlay')?.classList.remove('active');
+
+  // buka logout modal
+  document.getElementById('logoutModal').classList.add('active');
+}
+function confirmLogout() {
+  // 1. Hapus semua data session (Sama kayak sebelumnya)
+  localStorage.removeItem('token');
+  localStorage.removeItem('user_type');
+  localStorage.removeItem('user_username');
+  localStorage.removeItem('remember_user');
+  localStorage.removeItem('owner_remember');
+  localStorage.removeItem('owner_token_expiry');
+
+  // 2. TUTUP MODAL LOGOUT
+  closeLogoutModal();
+
+  // 3. UPDATE TAMPILAN SIDEBAR (PENTING!)
+  // Kita panggil ulang fungsi ini biar foto profil & tombol logout 
+  // langsung berubah jadi tombol "Login" & "Daftar" tanpa refresh page.
+  renderProfile();
+  
+  // Opsional: Kasih alert kecil biar user tau udah logout
+  // alert("Berhasil logout, vro!");
+}
+
+// --- CLOSE AUTH MODAL WHEN CLICKING OVERLAY ---
+document.getElementById('authModal')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeAuthModal();
+  }
+});
+
+// --- CLOSE LOGOUT MODAL WHEN CLICKING OVERLAY ---
+document.getElementById('logoutModal')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeLogoutModal();
+  }
+});
+
+// --- LOGIC PROFILE ---
+function renderProfile() {
+  const el = document.getElementById("profileArea");
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('user_type');
+  const username = localStorage.getItem('user_username');
+  
+  const isLoggedIn = token && userType;
+
+  if (!isLoggedIn) {
+    el.innerHTML = `
+      <div class="profile-row">
+        <div class="avatar" style="background:#334155; color:#fff">?</div>
+        <div class="profile-actions">
+          <button onclick="window.location.href='./auth.html'" title="Login">Login</button>
+          <button onclick="window.location.href='./auth.html'" title="Daftar">Daftar</button>
+        </div>
+      </div>
+    `;
+  } else {
+    const displayName = username || "User";
+    el.innerHTML = `
+      <div class="profile-row">
+        <div class="avatar">${displayName.charAt(0).toUpperCase()}</div>
+        <div class="username">${displayName}</div>
+        <div class="profile-actions">
+          <button onclick="event.stopPropagation(); showLogoutModal();">
+  Logout
+</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', function() {
+  renderProfile();
+});
+</script>
+
+</body>
+      </html>

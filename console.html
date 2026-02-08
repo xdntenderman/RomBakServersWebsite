@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Server Console - RomBak</title>
+
+<style>
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("image/bg.jpg"); /* ganti sesuai gambar */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.6; /* 60% */
+  z-index: -1;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}
+@media (max-width: 768px) {
+  body::before {
+    background-position: center top;
+  }
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier New', monospace;
+}
+
+body {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+/* ================= TOP BAR ================= */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid #22c55e;
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15);
+}
+
+.left-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu-btn {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #000;
+  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+  transition: all 0.3s ease;
+}
+
+.menu-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5);
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  color: #000;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.3);
+  border: 3px solid #22c55e;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.8), 0 0 60px rgba(34, 197, 94, 0.5);
+  }
+}
+
+.profile-info {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #000;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+.logout {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  transition: all 0.3s ease;
+}
+
+.logout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+/* ================= MAIN ================= */
+.main {
+  padding: 24px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+/* ================= CONSOLE ================= */
+.console-box {
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  border: 2px solid #22c55e;
+  border-radius: 15px;
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.console-box::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(34, 197, 94, 0.05), transparent);
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.console-title {
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.console-title::before {
+  content: '●';
+  color: #22c55e;
+  font-size: 12px;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0.3; }
+}
+
+.console-log {
+  height: 240px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 3px solid #22c55e;
+  position: relative;
+  z-index: 1;
+}
+
+.console-log::-webkit-scrollbar {
+  width: 8px;
+}
+
+.console-log::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.console-log::-webkit-scrollbar-thumb {
+  background: #22c55e;
+  border-radius: 4px;
+}
+
+.console-log p {
+  font-size: 13px;
+  margin-bottom: 5px;
+  color: #a8f5c9;
+  line-height: 1.5;
+}
+
+.console-input {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #22c55e;
+  position: relative;
+  z-index: 1;
+}
+
+.console-input span {
+  color: #22c55e;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.console-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  outline: none;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.console-input input::placeholder {
+  color: #666;
+}
+
+/* ================= STATS ================= */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.stat:hover {
+  border-color: #22c55e;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+}
+
+.stat:hover::before {
+  transform: scaleX(1);
+}
+
+.stat b {
+  display: block;
+  font-size: 24px;
+  color: #22c55e;
+  margin-top: 8px;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+/* ================= BUTTONS ================= */
+.actions {
+  display: flex;
+  gap: 12px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  background: linear-gradient(135deg, #1a1a1a 0%, #222 100%);
+  border: 2px solid #444;
+  color: #fff;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-radius: 10px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.actions button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.actions button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.actions button:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+}
+
+.actions button:active {
+  transform: translateY(0);
+}
+
+/* ================= INFO ================= */
+.info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.info-box {
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-box::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, transparent, rgba(34, 197, 94, 0.1));
+  border-radius: 0 0 0 100%;
+}
+
+.info-box:hover {
+  border-color: #22c55e;
+  transform: translateX(3px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.2);
+}
+
+.info-box strong {
+  color: #22c55e;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .info {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .actions button {
+    width: 100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="left-header">
+    <button class="menu-btn">☰</button>
+
+    <div class="profile">
+      <div class="avatar">X</div>
+      <div class="profile-info">
+        XDNTEnderMan<br>
+        <small>Owner</small>
+      </div>
+    </div>
+  </div>
+
+  <button class="logout" onclick="logout()">Logout</button>
+</header>
+
+<div class="main">
+
+  <!-- CONSOLE -->
+  <div class="console-box">
+    <div class="console-title">Server Console</div>
+    <div class="console-log" id="consoleLog">
+      <p>[12:30:45] Server starting...</p>
+      <p>[12:31:02] Server ONLINE ✓</p>
+      <p>[12:32:15] Player XDNTEnderMan joined</p>
+      <p>[12:33:28] World loaded successfully</p>
+    </div>
+
+    <div class="console-input">
+      <span>&gt;</span>
+      <input id="commandInput" placeholder="Type command..." />
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">CPU Usage<br><b id="cpu">23%</b></div>
+    <div class="stat">RAM Usage<br><b id="ram">41%</b></div>
+    <div class="stat">Network<br><b id="net">Normal</b></div>
+    <div class="stat">Storage<br><b id="disk">62%</b></div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button onclick="addLog('Server restarted successfully')">🔄 Restart Server</button>
+    <button onclick="addLog('Server stopped')">🛑 Stop Server</button>
+    <button onclick="addLog('Backup created successfully')">💾 Create Backup</button>
+    <button onclick="addLog('Server files refreshed')">🔃 Refresh</button>
+  </div>
+
+  <!-- INFO -->
+  <div class="info">
+    <div class="info-box"><strong>IP Server:</strong> play.rombak.xyz</div>
+    <div class="info-box"><strong>Members Joined:</strong> 245</div>
+    <div class="info-box"><strong>Minecraft Version:</strong> 1.20.4</div>
+    <div class="info-box"><strong>Server Status:</strong> Online ✓</div>
+    <div class="info-box"><strong>Uptime:</strong> 12h 34m</div>
+    <div class="info-box"><strong>TPS:</strong> 19.8</div>
+  </div>
+
+</div>
+
+<script>
+const log = document.getElementById("consoleLog");
+const input = document.getElementById("commandInput");
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter" && input.value.trim()) {
+    addLog("> " + input.value);
+    input.value = "";
+  }
+});
+
+function addLog(text) {
+  const p = document.createElement("p");
+  const time = new Date().toLocaleTimeString('id-ID', { hour12: false });
+  p.textContent = "[" + time + "] " + text;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
+}
+
+function logout() {
+  if (confirm("Yakin ingin logout?")) {
+    localStorage.clear();
+    window.location.href = "index.html";
+  }
+}
+
+/* fake realtime stats */
+setInterval(() => {
+  cpu.textContent = Math.floor(Math.random()*40+10)+"%";
+  ram.textContent = Math.floor(Math.random()*50+20)+"%";
+  disk.textContent = Math.floor(Math.random()*30+50)+"%";
+}, 2000);
+
+// Simulasi log otomatis
+setInterval(() => {
+  const randomLogs = [
+    "Player activity detected",
+    "Chunk loaded at coordinates",
+    "Autosave completed",
+    "Connection stable"
+  ];
+  const randomLog = randomLogs[Math.floor(Math.random() * randomLogs.length)];
+  addLog(randomLog);
+}, 10000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner Dashboard - RomBak Servers</title>
+
+<style>
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("image/bg.jpg"); /* ganti sesuai gambar */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.6; /* 60% */
+  z-index: -1;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}
+@media (max-width: 768px) {
+  body::before {
+    background-position: center top;
+  }
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #0a1628 0%, #162447 100%);
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+/* ================= HEADER ================= */
+header {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 16px 20px;
+  border-bottom: 2px solid #22c55e;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  color: #22c55e;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 8px;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.menu-btn:hover {
+  transform: scale(1.1);
+  color: #16a34a;
+}
+
+.header-icon {
+  font-size: 32px;
+}
+
+.header-title {
+  color: #22c55e;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid #22c55e;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  color: #000;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.6);
+  border: 3px solid #22c55e;
+}
+
+.profile-info {
+  line-height: 1.4;
+}
+
+.profile-name {
+  color: #22c55e;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.profile-role {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border: none;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 280px;
+  height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-right: 2px solid #22c55e;
+  padding-top: 80px;
+  transition: left 0.3s ease;
+  z-index: 200;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.sidebar-title {
+  color: #22c55e;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-subtitle {
+  color: #9ca3af;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 10px 0;
+}
+
+.sidebar li {
+  padding: 16px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  border-left: 4px solid transparent;
+}
+
+.sidebar li:hover {
+  background: rgba(34, 197, 94, 0.1);
+  border-left-color: #22c55e;
+  color: #22c55e;
+}
+
+.sidebar li.active {
+  background: rgba(34, 197, 94, 0.15);
+  border-left-color: #22c55e;
+  color: #22c55e;
+  font-weight: bold;
+}
+
+/* ================= OVERLAY ================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  z-index: 150;
+  backdrop-filter: blur(2px);
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* ================= MAIN ================= */
+.main {
+  padding: 100px 20px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.welcome {
+  margin-bottom: 30px;
+}
+
+.welcome h2 {
+  color: #22c55e;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.welcome p {
+  color: #cbd5e1;
+  font-size: 16px;
+}
+
+/* ================= STATS GRID ================= */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 2px solid #334155;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: #22c55e;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.2);
+}
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-icon {
+  font-size: 36px;
+}
+
+.stat-label {
+  color: #9ca3af;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: bold;
+  color: #22c55e;
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+/* ================= MENU GRID ================= */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.menu-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 2px solid #334155;
+  border-radius: 16px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.menu-card:hover {
+  border-color: #22c55e;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.2);
+}
+
+.menu-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.menu-icon {
+  font-size: 40px;
+}
+
+.menu-title {
+  color: #22c55e;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.menu-description {
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .header-title {
+    font-size: 16px;
+  }
+  
+  .profile-card {
+    padding: 6px 12px;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  
+  .profile-name {
+    font-size: 13px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-info {
+    display: none;
+  }
+  
+  .header-title {
+    display: none;
+  }
+  
+  .logout-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-content">
+    <div class="header-left">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <div class="header-icon">🎮</div>
+      <div class="header-title">Owner Dashboard</div>
+    </div>
+    
+    <div class="header-right">
+      <div class="profile-card">
+        <div class="avatar">X</div>
+        <div class="profile-info">
+          <div class="profile-name">XDNTEnderMan</div>
+          <div class="profile-role">Owner</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">
+      <span>🎮</span>
+      Owner Dashboard
+    </div>
+    <div class="sidebar-subtitle">RomBak Servers</div>
+  </div>
+  <ul>
+    <li class="active" onclick="showSection('dashboard')">📊 Dashboard</li>
+    <li onclick="showSection('saran')">💡 Saran</li>
+    <li onclick="showSection('keluhan')">⚠️ Keluhan</li>
+    <li onclick="window.location.href='console.html'">🖥️ Server</li>
+    <li onclick="showSection('member')">👥 Member</li>
+  </ul>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <!-- WELCOME -->
+  <div class="welcome">
+    <h2>Dashboard</h2>
+    <p>Selamat datang kembali, XDNTEnderMan! 👋</p>
+  </div>
+
+  <!-- STATS GRID -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Total Member</div>
+      </div>
+      <div class="stat-value" id="totalMember">1,248</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon">💡</div>
+        <div class="stat-label">Saran Pending</div>
+      </div>
+      <div class="stat-value" id="saranPending">12</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-label">Keluhan Baru</div>
+      </div>
+      <div class="stat-value" id="keluhanBaru">5</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon">🎮</div>
+        <div class="stat-label">Server Online</div>
+      </div>
+      <div class="stat-value" style="font-size: 28px;">AKTIF</div>
+    </div>
+  </div>
+
+  <!-- MENU GRID -->
+  <div class="menu-grid">
+    <div class="menu-card" onclick="alert('Fitur Saran dari Member')">
+      <div class="menu-header">
+        <div class="menu-icon">💡</div>
+        <div class="menu-title">Saran dari Member</div>
+      </div>
+      <div class="menu-description">
+        Lihat, review, dan terima saran dari member server.
+      </div>
+    </div>
+
+    <div class="menu-card" onclick="alert('Fitur Keluhan Member')">
+      <div class="menu-header">
+        <div class="menu-icon">⚠️</div>
+        <div class="menu-title">Keluhan Member</div>
+      </div>
+      <div class="menu-description">
+        Keluhan server, bug, lag, atau masalah teknis lainnya.
+      </div>
+    </div>
+
+    <div class="menu-card" onclick="window.location.href='console.html'">
+      <div class="menu-header">
+        <div class="menu-icon">🖥️</div>
+        <div class="menu-title">Control Panel Server</div>
+      </div>
+      <div class="menu-description">
+        Restart, maintenance, status, dan monitoring server.
+      </div>
+    </div>
+
+    <div class="menu-card" onclick="alert('Fitur Kelola Member')">
+      <div class="menu-header">
+        <div class="menu-icon">👥</div>
+        <div class="menu-title">Kelola Member</div>
+      </div>
+      <div class="menu-description">
+        Ban, unban, role, kick, dan manajemen akun member.
+      </div>
+    </div>
+
+    <div class="menu-card" onclick="alert('Fitur Analytics')">
+      <div class="menu-header">
+        <div class="menu-icon">📊</div>
+        <div class="menu-title">Analytics</div>
+      </div>
+      <div class="menu-description">
+        Statistik server, player active, dan performa server.
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Toggle Sidebar
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+}
+
+// Show Section (placeholder untuk navigasi)
+function showSection(section) {
+  console.log('Navigating to:', section);
+  
+  // Update active menu
+  const menuItems = document.querySelectorAll('.sidebar li');
+  menuItems.forEach(item => item.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Close sidebar on mobile
+  if (window.innerWidth <= 768) {
+    toggleSidebar();
+  }
+  
+  // TODO: Implement section navigation
+}
+
+// Logout
+function logout() {
+  if (confirm('Yakin ingin logout?')) {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  }
+}
+
+// Auto-update stats (simulasi)
+setInterval(() => {
+  const randomChange = Math.floor(Math.random() * 5) - 2;
+  const currentMember = parseInt(document.getElementById('totalMember').textContent.replace(',', ''));
+  document.getElementById('totalMember').textContent = (currentMember + randomChange).toLocaleString();
+}, 5000);
+</script>
+
+</body>
+</html>
