@@ -369,10 +369,13 @@ input[type="checkbox"] {
 </div>
 
 <script>
-const USE_BACKEND = true; // 👈 ganti true kalau mau pake Render
-const BACKEND_URL = 'https://rombak-backend.onrender.com'; // 👈 Ganti pake link Render lu
+    
+// 1. PENGATURAN PYTHONANYWHERE
+const USE_BACKEND = true; // 👈 Ganti TRUE kalau mau pake PythonAnywhere
+const PA_USERNAME = 'USERNAME_LU'; // 👈 Ganti pake username PythonAnywhere lu
+const BACKEND_URL = `https://${PA_USERNAME}.pythonanywhere.com`;
 
-// --- TAB SWITCHING ---
+// --- TAB SWITCHING (Struktur asli lu) ---
 function switchTab(tab) {
   document.querySelectorAll('.form-container').forEach(el => {
     el.classList.remove('active');
@@ -449,35 +452,36 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     return;
   }
 
+  // --- MODE PYTHONANYWHERE ---
   try {
     const response = await fetch(`${BACKEND_URL}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, remember })
+      body: JSON.stringify({ username, password })
     });
     const data = await response.json();
     if (response.ok) {
       showSuccess('login', '✅ Login berhasil!');
       localStorage.setItem('token', data.token);
       localStorage.setItem('user_type', data.user_type);
+      localStorage.setItem('user_username', data.username);
       if (remember) localStorage.setItem('remember_user', username);
       setTimeout(() => { window.location.href = 'index.html'; }, 1200);
     } else {
       showError('login', data.message || 'Login gagal');
     }
   } catch (err) {
-    showError('login', 'Server belum aktif (Render)');
+    showError('login', '❌ Server PythonAnywhere offline/error');
   } finally {
     btn.innerText = originalText;
     btn.disabled = false;
   }
 });
 
-// --- MEMBER REGISTER HANDLER ---
+// --- REGISTER HANDLER ---
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMessages();
-  
   const username = document.getElementById('registerUsername').value.trim();
   const email = document.getElementById('registerEmail').value.trim();
   const password = document.getElementById('registerPassword').value;
@@ -486,11 +490,9 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   const jobRole = document.getElementById('registerJobRole').value;
 
   if (password !== confirmPassword) {
-    showError('register', '❌ Konfirmasi password tidak cocok!');
+    showError('register', '❌ Password tidak cocok!');
     return;
   }
-  if (!accountRole) { showError('register', 'Pilih jenis akun'); return; }
-  if (!jobRole) { showError('register', 'Pilih role kamu di server'); return; }
 
   const btn = document.getElementById('registerBtn');
   btn.disabled = true;
@@ -498,13 +500,14 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
   if (!USE_BACKEND) {
     setTimeout(() => {
-      showSuccess('register', '✅ (Simulasi) Akun ' + username + ' berhasil dibuat!');
+      showSuccess('register', '✅ (Simulasi) Akun ' + username + ' terdaftar!');
       btn.disabled = false;
       btn.innerText = 'Register';
     }, 1000);
     return;
   }
 
+  // --- MODE PYTHONANYWHERE ---
   try {
     const response = await fetch(`${BACKEND_URL}/api/register`, {
       method: 'POST',
@@ -516,13 +519,13 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     });
     const data = await response.json();
     if (response.ok) {
-      showSuccess('register', '✅ Akun berhasil dibuat! Silakan login.');
+      showSuccess('register', '✅ Berhasil! Silakan login.');
       setTimeout(() => { switchTab('login'); document.getElementById('registerForm').reset(); }, 1500);
     } else {
       showError('register', data.message || 'Registrasi gagal');
     }
   } catch (err) {
-    showError('register', '❌ Server Render belum aktif!');
+    showError('register', '❌ Gagal konek ke PythonAnywhere');
   } finally {
     btn.disabled = false;
     btn.innerText = 'Register';
@@ -533,7 +536,6 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 document.getElementById('ownerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMessages();
-
   const password = document.getElementById('ownerPassword').value;
   const remember = document.getElementById('ownerRemember').checked;
   const btn = document.getElementById('ownerBtn');
@@ -544,7 +546,7 @@ document.getElementById('ownerForm').addEventListener('submit', async (e) => {
   if (!USE_BACKEND) {
     setTimeout(() => {
       if (password === 'EnderMan908') {
-        showSuccess('owner', '✅ Owner login simulasi berhasil!');
+        showSuccess('owner', '✅ Owner simulasi berhasil!');
         localStorage.setItem('token', 'owner_simulasi_token');
         localStorage.setItem('user_type', 'owner');
         localStorage.setItem('owner_username', 'XDNTEnderMan');
@@ -554,7 +556,7 @@ document.getElementById('ownerForm').addEventListener('submit', async (e) => {
         }
         setTimeout(() => { window.location.href = 'owner.html'; }, 1200);
       } else {
-        showError('owner', '❌ Password Owner salah (mode simulasi)');
+        showError('owner', '❌ Password Owner salah (simulasi)');
       }
       btn.innerText = originalText;
       btn.disabled = false;
@@ -562,24 +564,25 @@ document.getElementById('ownerForm').addEventListener('submit', async (e) => {
     return;
   }
 
+  // --- MODE PYTHONANYWHERE ---
   try {
     const response = await fetch(`${BACKEND_URL}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'XDNTEnderMan', password, remember })
+      body: JSON.stringify({ username: 'XDNTEnderMan', password })
     });
     const data = await response.json();
-    if (response.ok) {
-      showSuccess('owner', '✅ Owner login berhasil!');
+    if (response.ok && data.user_type === 'owner') {
+      showSuccess('owner', '✅ Welcome back, Owner!');
       localStorage.setItem('token', data.token);
       localStorage.setItem('user_type', 'owner');
       localStorage.setItem('owner_username', 'XDNTEnderMan');
       setTimeout(() => { window.location.href = 'owner.html'; }, 1200);
     } else {
-      showError('owner', data.message || 'Password Owner salah');
+      showError('owner', '❌ Password salah atau bukan akun Owner!');
     }
   } catch (err) {
-    showError('owner', 'Server Render belum aktif');
+    showError('owner', '❌ Server error');
   } finally {
     btn.innerText = originalText;
     btn.disabled = false;
@@ -588,17 +591,9 @@ document.getElementById('ownerForm').addEventListener('submit', async (e) => {
 
 window.addEventListener('DOMContentLoaded', () => {
   const remember = localStorage.getItem('remember_user');
-  if (remember) {
-    document.getElementById('loginUsername').value = remember;
-  }
-  const ownerRemember = localStorage.getItem('owner_remember');
-  if (ownerRemember === 'true') {
-    const expiry = localStorage.getItem('owner_token_expiry');
-    if (expiry && new Date().getTime() < parseInt(expiry)) {
-       // Auto redirect logic here if needed
-    }
-  }
+  if (remember) document.getElementById('loginUsername').value = remember;
 });
+
 
 </script>
 
