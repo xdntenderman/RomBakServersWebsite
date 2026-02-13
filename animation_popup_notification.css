@@ -1,0 +1,124 @@
+/* =========================================
+   FILE: animation_popup_notification.css
+   STYLE KHUSUS MODAL NOTIFIKASI (ROMBAK SERVERS)
+   ========================================= */
+
+/* --- 1. DEFINISI ANIMASI --- */
+@keyframes modalPop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* --- 2. BACKGROUND OVERLAY (BLUR) --- */
+.modal-overlay {
+    position: fixed;
+    inset: 0; /* Shortcut untuk top:0, left:0, right:0, bottom:0 */
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8); /* Gelap transparan */
+    backdrop-filter: blur(8px); /* Efek kaca buram */
+    display: none; /* Default sembunyi */
+    justify-content: center;
+    align-items: center;
+    z-index: 3000; /* Pastikan di atas segalanya */
+}
+
+/* Class untuk memunculkan modal via JS */
+.modal-overlay.active {
+    display: flex;
+}
+
+/* --- 3. KOTAK KONTEN (CARD) --- */
+.modal-content {
+    background: #0f172a; /* Warna dasar gelap (Slate 900) */
+    width: 90%;
+    max-width: 400px; /* Ukuran standar HP & PC */
+    padding: 35px;
+    border-radius: 24px; /* Sudut membulat modern */
+    text-align: center;
+    
+    /* Border Neon Hijau */
+    border: 2px solid #22c55e;
+    
+    /* Efek Cahaya (Glow) */
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+    
+    /* Animasi Masuk */
+    animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- 4. TEXT & ICON --- */
+.modal-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.modal-title {
+    color: #22c55e; /* Hijau Matrix/Minecraft */
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.modal-message {
+    color: #9ca3af; /* Abu-abu terang */
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.modal-message small {
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* --- 5. TOMBOL ACTIONS --- */
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Tombol Utama (Iya/Login) */
+.modal-btn-primary {
+    background: #22c55e;
+    color: #022c22; /* Teks hijau sangat gelap biar kontras */
+}
+
+.modal-btn-primary:hover {
+    background: #4ade80; /* Hijau lebih terang pas di-hover */
+    transform: translateY(-2px); /* Efek naik dikit */
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+}
+
+/* Tombol Sekunder (Batal/Nanti) */
+.modal-btn-secondary {
+    background: #334155; /* Abu-abu biru gelap */
+    color: white;
+}
+
+.modal-btn-secondary:hover {
+    background: #475569;
+    transform: translateY(-2px);
+}
