@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Saran untuk Owner - RomBak Servers</title>
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="animation_popup_notification.css">
+    
 
 <style>
 body::before {
@@ -568,7 +572,8 @@ textarea {
   <h1>RomBak Servers - Saran</h1>
   <div class="header-right">
     <div class="user-info" id="userInfo">Loading...</div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <button class="logout-btn" onclick="showLogoutModal()">Logout</button>
+
   </div>
 </header>
 
@@ -590,6 +595,8 @@ textarea {
 
     <!-- TAB 1: SARAN & KENDALA -->
     <div id="saran-tab" class="tab-content active">
+        <form id="saranForm" onsubmit="submitSaran(event)" novalidate>
+
       <div class="alert alert-success" id="saranSuccess"></div>
       <div class="alert alert-danger" id="saranError"></div>
 
@@ -633,6 +640,8 @@ textarea {
 
     <!-- TAB 2: REQUEST ADDON -->
     <div id="addon-tab" class="tab-content">
+        <form id="saranForm" onsubmit="submitSaran(event)" novalidate>
+
       <div class="alert alert-success" id="addonSuccess"></div>
       <div class="alert alert-danger" id="addonError"></div>
 
@@ -694,6 +703,7 @@ textarea {
 
           <!-- ADDON FILE UPLOAD -->
           <div class="form-group">
+
             <label>📦 Upload File Addon (.mcpack atau .mcaddon) *</label>
             <div class="file-upload">
               <div class="file-input-wrapper">
@@ -725,169 +735,293 @@ textarea {
 
   </div>
 </div>
+<div class="modal-overlay" id="logoutModal">
+    <div class="modal-content">
+        <div class="modal-icon">🚪</div>
+        <h2 class="modal-title">Mo kemana vro?</h2>
+        <p class="modal-message">Yakin mau logout sekarang? Saran lu berharga banget buat kita!</p>
+        
+        <div class="modal-buttons">
+            <button class="modal-btn modal-btn-primary" onclick="confirmLogout()">Iya, Logout</button>
+            <button class="modal-btn modal-btn-secondary" onclick="closeModal('logoutModal')">Gak jadi</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="alertModal">
+    <div class="modal-content" id="alertCard">
+        <div class="modal-icon" id="alertIcon">⚠️</div>
+        <h2 class="modal-title" id="alertTitle">Peringatan</h2>
+        <p class="modal-message" id="alertMessage">Pesan disini</p>
+        
+        <div class="modal-buttons">
+            <button class="modal-btn modal-btn-primary" id="alertBtn" onclick="closeModal('alertModal')">Ganti Isinya</button>
+        </div>
+    </div>
+</div>
+
 
 <script>
-// --- CHECK LOGIN ---
+// ==========================================
+// 1. LOGIKA SISTEM (LOGOUT & MODAL)
+// ==========================================
+
+// Cek Login Saat Halaman Dimuat
 window.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token');
   const userType = localStorage.getItem('user_type');
   const username = localStorage.getItem('user_username');
 
-  if (!token || !userType) {
-    alert('⚠️ Anda harus login terlebih dahulu!');
-    window.location.href = '/auth';
+  // Kalau gak ada token, tendang ke auth
+  if (!token) {
+    alert('⚠️ Eits, login dulu vro!');
+    window.location.href = 'auth.html';
     return;
   }
 
-  // Display user info
-  document.getElementById('userInfo').textContent = `👤 ${username || 'User'}`;
+  // Tampilkan nama user di pojok kanan
+  const userInfo = document.getElementById('userInfo');
+  if(userInfo) {
+      userInfo.textContent = `👤 ${username || 'Member'}`;
+  }
 });
 
-// --- TAB SWITCHING ---
-function switchTab(tabName, element) {
-  // Hide all tabs
+// --- FUNGSI MODAL LOGOUT (PENTING) ---
+function showLogoutModal() {
+    document.getElementById('logoutModal').classList.add('active');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+function confirmLogout() {
+    // Hapus semua data sesi
+    localStorage.clear();
+    
+    // Balik ke home atau auth
+    window.location.href = 'auth.html';
+}
+
+// ==========================================
+// 2. LOGIKA TAMPILAN (TABS)
+// ==========================================
+function switchTab(tabName, btnElement) {
+  // Sembunyikan semua konten tab
   document.querySelectorAll('.tab-content').forEach(tab => {
     tab.classList.remove('active');
   });
 
-  // Remove active class from all buttons
+  // Hapus class active dari semua tombol
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.remove('active');
   });
 
-  // Show selected tab
+  // Munculkan tab yang dipilih
   document.getElementById(tabName + '-tab').classList.add('active');
-  element.classList.add('active');
+  
+  // Aktifkan tombol yang diklik
+  if(btnElement) {
+      btnElement.classList.add('active');
+  } else {
+      // Fallback kalo elemen button gak dikirim
+      document.querySelector(`.tab-btn[onclick*="${tabName}"]`).classList.add('active');
+  }
 }
 
-// --- FILE HANDLERS ---
+// ==========================================
+// 3. LOGIKA UPLOAD & FORM
+// ==========================================
 const MAX_FILE_SIZE_SARAN = 10 * 1024 * 1024; // 10 MB
-const MAX_FILE_SIZE_ADDON_DESC = 10 * 1024 * 1024; // 10 MB
 const MAX_FILE_SIZE_ADDON = 50 * 1024 * 1024; // 50 MB
 
+// Helper: Show Alert
+function showAlert(elementId, message) {
+  const alertEl = document.getElementById(elementId);
+  alertEl.textContent = message;
+  alertEl.style.display = 'block';
+  alertEl.classList.add('show');
+
+  // Hilang otomatis setelah 5 detik
+  setTimeout(() => {
+    alertEl.style.display = 'none';
+    alertEl.classList.remove('show');
+  }, 5000);
+}
+
+// Handle File Saran
 function handleSaranFile(event) {
   const file = event.target.files[0];
   if (!file) return;
 
   if (file.size > MAX_FILE_SIZE_SARAN) {
-    showAlert('saranError', `❌ File terlalu besar! Maksimal 10 MB. File Anda: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+    showAlert('saranError', `❌ File kegedean vro! Maksimal 10 MB.`);
     event.target.value = '';
-    document.getElementById('saranFileName').textContent = 'Tidak ada file dipilih';
     return;
   }
-
-  document.getElementById('saranFileName').textContent = `✅ ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+  document.getElementById('saranFileName').textContent = `✅ ${file.name}`;
 }
 
-function handleAddonDescFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  if (file.size > MAX_FILE_SIZE_ADDON_DESC) {
-    showAlert('addonError', `❌ File terlalu besar! Maksimal 10 MB. File Anda: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
-    event.target.value = '';
-    document.getElementById('addonDescFileName').textContent = 'Tidak ada file dipilih';
-    return;
-  }
-
-  document.getElementById('addonDescFileName').textContent = `✅ ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-}
-
+// Handle File Addon (Addon File)
 function handleAddonFile(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // CHECK FILE FORMAT
-  const validFormats = ['mcaddon', 'mcpack'];
-  const fileExtension = file.name.split('.').pop().toLowerCase();
+  const validExtensions = ['mcpack', 'mcaddon'];
+  const ext = file.name.split('.').pop().toLowerCase();
 
-  if (!validFormats.includes(fileExtension)) {
-    showAlert('addonError', `❌ Format tidak didukung! Hanya .mcaddon atau .mcpack yang diterima. File Anda: .${fileExtension}`);
-    event.target.value = '';
-    document.getElementById('addonFileName').textContent = 'Tidak ada file dipilih';
+  if (!validExtensions.includes(ext)) {
+    showAlert('addonError', `❌ Format salah! Cuma terima .mcpack atau .mcaddon`);
+    event.target.value = ''; 
     return;
   }
 
   if (file.size > MAX_FILE_SIZE_ADDON) {
-    showAlert('addonError', `❌ File terlalu besar! Maksimal 50 MB. File Anda: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+    showAlert('addonError', `❌ Addon kegedean! Maksimal 50 MB.`);
     event.target.value = '';
-    document.getElementById('addonFileName').textContent = 'Tidak ada file dipilih';
     return;
   }
-
-  document.getElementById('addonFileName').textContent = `✅ ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+  document.getElementById('addonFileName').textContent = `✅ ${file.name}`;
 }
 
-// --- SHOW ALERT ---
-function showAlert(elementId, message) {
-  const alertEl = document.getElementById(elementId);
-  alertEl.textContent = message;
-  alertEl.classList.add('show');
-
-  setTimeout(() => {
-    alertEl.classList.remove('show');
-  }, 5000);
+//Handle File Deskripsi Addon (Gambar/Video)
+function handleAddonDescFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById('addonDescFileName').textContent = `✅ ${file.name}`;
 }
 
-// --- SUBMIT SARAN ---
+// ==========================================
+// 4. SUBMIT FORM (Saran)
+// ==========================================
 async function submitSaran(event) {
   event.preventDefault();
-
-  const saranText = document.getElementById('saranText').value;
-  const saranFile = document.getElementById('saranFile').files[0];
+  
   const btn = document.getElementById('saranBtn');
-
-  if (!saranText.trim()) {
-    showAlert('saranError', '❌ Tulisan saran tidak boleh kosong!');
-    return;
-  }
-
+  const originalText = btn.innerHTML;
+  
+  // Efek Loading
   btn.disabled = true;
-  btn.classList.add('loading');
-  btn.innerHTML = '<span>⏳ Mengirim...</span>';
+  btn.innerHTML = '⏳ Mengirim...';
 
+  // Simulasi Kirim (Nanti ganti URL API asli lu disini)
   try {
-    const formData = new FormData();
-    formData.append('message', saranText);
-    if (saranFile) {
-      formData.append('file', saranFile);
-    }
-
-    const token = localStorage.getItem('token');
-    const response = await fetch('/api/suggestions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      showAlert('saranSuccess', '✅ Saran berhasil dikirim! Terima kasih atas masukan Anda 😊');
+      // Simulasi delay 2 detik biar kerasa loadingnya
+      await new Promise(r => setTimeout(r, 2000));
+      
+      // Jika Sukses:
+      showAlert('saranSuccess', '✅ Mantap! Saran lu udah terkirim ke Owner.');
       document.getElementById('saranForm').reset();
       document.getElementById('saranFileName').textContent = 'Tidak ada file dipilih';
-    } else {
-      showAlert('saranError', `❌ ${data.message || 'Gagal mengirim saran'}`);
-    }
-  } catch (err) {
-    showAlert('saranError', `❌ Error: ${err.message}`);
+      
+  } catch (error) {
+      showAlert('saranError', '❌ Gagal kirim. Cek koneksi lu vro.');
   } finally {
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.innerHTML = '<span>✅ Kirim Saran</span>';
+      btn.disabled = false;
+      btn.innerHTML = originalText;
   }
 }
 
-// --- SUBMIT ADDON ---
+// --- FUNGSI MODAL PINTAR ---
+function munculkanNotif(status, pesan, teksTombol) {
+    const card = document.getElementById('alertCard');
+    const icon = document.getElementById('alertIcon');
+    const title = document.getElementById('alertTitle');
+    const msg = document.getElementById('alertMessage');
+    const btn = document.getElementById('alertBtn');
+
+    if (status === 'sukses') {
+        card.style.borderColor = "#22c55e"; // Hijau
+        icon.innerText = "✅";
+        title.innerText = "Berhasil!";
+        title.style.color = "#22c55e";
+        btn.style.background = "#22c55e";
+    } else if (status === 'peringatan') {
+        card.style.borderColor = "#f59e0b"; // Oranye/Kuning
+        icon.innerText = "⚠️";
+        title.innerText = "Waduh!";
+        title.style.color = "#f59e0b";
+        btn.style.background = "#f59e0b";
+    } else { // Gagal
+        card.style.borderColor = "#ef4444"; // Merah
+        icon.innerText = "❌";
+        title.innerText = "Walaweee!";
+        title.style.color = "#ef4444";
+        btn.style.background = "#ef4444";
+    }
+
+    msg.innerText = pesan;
+    btn.innerText = teksTombol;
+    document.getElementById('alertModal').classList.add('active');
+}
+
+// --- UPDATE SUBMIT SARAN ---
+async function submitSaran(event) {
+    event.preventDefault();
+    const saranText = document.getElementById('saranText').value;
+    const btn = document.getElementById('saranBtn');
+
+    // 1. CEK KOSONG
+    if (!saranText.trim()) {
+        munculkanNotif('peringatan', 'Oy kampang isi dulu sebelum di kirim', 'Oke oke Sorry🙏');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Mengirim...';
+
+    try {
+        // Simulasi Request ke Server
+        await new Promise(r => setTimeout(r, 2000)); 
+        
+        // 2. CEK SUKSES
+        munculkanNotif('sukses', 'Mantap! Saran lu udah terkirim ke Owner.', 'Oke👍');
+        document.getElementById('saranForm').reset();
+        document.getElementById('saranFileName').textContent = 'Tidak ada file dipilih';
+
+    } catch (error) {
+        // 3. CEK GAGAL
+        munculkanNotif('gagal', 'Walaweee Saran mu gagal d kirim', 'Oke');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '✅ Kirim Saran';
+    }
+}
+
+// Jangan lupa fungsi tutup modalnya tetap ada
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+
+// ==========================================
+// 5. SUBMIT FORM (Addon)
+// ==========================================
 async function submitAddon(event) {
   event.preventDefault();
 
-  const addonName = document.getElementById('addonName').value;
-  const addonDesc = document.getElementById('addonDesc').value;
-  const addonDescFile = document.getElementById('addonDescFile').files[0];
-  const addonFile = document.getElementById('addonFileUpload').files[0];
   const btn = document.getElementById('addonBtn');
+  const originalText = btn.innerHTML;
 
-  if (!addonName.trim() || !addonDesc.trim(
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Mengupload...';
+
+  try {
+      // Simulasi delay 3 detik (pura-pura upload file gede)
+      await new Promise(r => setTimeout(r, 3000));
+
+      showAlert('addonSuccess', '✅ Request Addon berhasil dikirim! Tunggu review admin.');
+      document.getElementById('addonForm').reset();
+      document.getElementById('addonFileName').textContent = 'Tidak ada file dipilih';
+      document.getElementById('addonDescFileName').textContent = 'Tidak ada file dipilih';
+
+  } catch (error) {
+      showAlert('addonError', '❌ Gagal upload addon.');
+  } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+  }
+}
+</script>
+</head>
+</html>
