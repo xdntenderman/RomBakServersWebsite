@@ -468,10 +468,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       if (remember) localStorage.setItem('remember_user', username);
       setTimeout(() => { window.location.href = 'index.html'; }, 1200);
     } else {
-      showError('login', data.message || 'Login gagal');
+      showError('login', data.message || 'Oy kampang Login gagal mungkin salah password atau username');
     }
   } catch (err) {
-    showError('login', '❌ Server PythonAnywhere offline/error');
+    showError('login', '❌ Server Error/Sedang Offline');
   } finally {
     btn.innerText = originalText;
     btn.disabled = false;
@@ -525,7 +525,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
       showError('register', data.message || 'Registrasi gagal');
     }
   } catch (err) {
-    showError('register', '❌ Gagal konek ke PythonAnywhere');
+    showError('register', '❌ Gagal konek ke Server');
   } finally {
     btn.disabled = false;
     btn.innerText = 'Register';
