@@ -369,21 +369,18 @@ input[type="checkbox"] {
 </div>
 
 <script>
-const USE_BACKEND = false; // 👈 ganti true kalau PY sudah ada
+const USE_BACKEND = true; // 👈 ganti true kalau mau pake Render
+const BACKEND_URL = 'https://rombak-backend.onrender.com'; // 👈 Ganti pake link Render lu
 
 // --- TAB SWITCHING ---
 function switchTab(tab) {
-  // Hide all forms
   document.querySelectorAll('.form-container').forEach(el => {
     el.classList.remove('active');
   });
-
-  // Remove active from all tabs
   document.querySelectorAll('.tab-btn').forEach(el => {
     el.classList.remove('active');
   });
 
-  // Show selected form and set active tab
   if (tab === 'login') {
     document.getElementById('loginForm').classList.add('active');
     document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
@@ -396,19 +393,15 @@ function switchTab(tab) {
     document.getElementById('ownerWarning').classList.add('show');
     document.getElementById('ownerUsername').value = 'XDNTEnderMan';
   }
-
-  // Clear messages
   clearMessages();
 }
 
-// --- CLEAR MESSAGES ---
 function clearMessages() {
   document.querySelectorAll('.error-message, .success-message').forEach(el => {
     el.classList.remove('show');
   });
 }
 
-// --- SHOW ERROR ---
 function showError(formType, message) {
   const errorEl = document.getElementById(`${formType}Error`);
   if (errorEl) {
@@ -417,7 +410,6 @@ function showError(formType, message) {
   }
 }
 
-// --- SHOW SUCCESS ---
 function showSuccess(formType, message) {
   const successEl = document.getElementById(`${formType}Success`);
   if (successEl) {
@@ -440,238 +432,175 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   btn.innerText = '⏳ Loading...';
   btn.disabled = true;
 
-  /* =========================
-     MODE SIMULASI (TANPA PY)
-     ========================= */
   if (!USE_BACKEND) {
     setTimeout(() => {
       if (username === 'Simulasi 2.0' && password === 'SimulasiSaja') {
         showSuccess('login', '✅ Login simulasi berhasil!');
-
         localStorage.setItem('token', 'simulasi_token');
         localStorage.setItem('user_type', 'member');
-
-        if (remember) {
-          localStorage.setItem('remember_user', username);
-        }
-
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 1200);
-
+        if (remember) localStorage.setItem('remember_user', username);
+        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
       } else {
-        showError(
-          'login',
-          '❌ Username atau password salah (mode simulasi)'
-        );
+        showError('login', '❌ Username atau password salah (mode simulasi)');
       }
-
       btn.innerText = originalText;
       btn.disabled = false;
     }, 1000);
-
-    return; // ⛔ STOP DI SINI (backend gak jalan)
+    return;
   }
 
-  /* =========================
-     MODE BACKEND (PYTHON)
-     ========================= */
   try {
-    const response = await fetch('http://127.0.0.1:5000/api/login', {
+    const response = await fetch(`${BACKEND_URL}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, remember })
     });
-
     const data = await response.json();
-
     if (response.ok) {
       showSuccess('login', '✅ Login berhasil!');
       localStorage.setItem('token', data.token);
       localStorage.setItem('user_type', data.user_type);
-
-      if (remember) {
-        localStorage.setItem('remember_user', username);
-      }
-
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1200);
+      if (remember) localStorage.setItem('remember_user', username);
+      setTimeout(() => { window.location.href = 'index.html'; }, 1200);
     } else {
       showError('login', data.message || 'Login gagal');
     }
-
   } catch (err) {
-    showError('login', 'Server belum aktif');
+    showError('login', 'Server belum aktif (Render)');
   } finally {
     btn.innerText = originalText;
     btn.disabled = false;
   }
 });
 
+// --- MEMBER REGISTER HANDLER ---
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMessages();
+  
   const username = document.getElementById('registerUsername').value.trim();
-const email = document.getElementById('registerEmail').value.trim();
-const password = document.getElementById('registerPassword').value;
-const confirmPassword = document.getElementById('registerConfirmPassword').value;
+  const email = document.getElementById('registerEmail').value.trim();
+  const password = document.getElementById('registerPassword').value;
+  const confirmPassword = document.getElementById('registerConfirmPassword').value;
+  const accountRole = document.getElementById('registerAccountRole').value;
+  const jobRole = document.getElementById('registerJobRole').value;
 
-const accountRole = document.getElementById('registerAccountRole').value;
-const jobRole = document.getElementById('registerJobRole').value;
-
- 
-if (!accountRole) {
-  showError('register', 'Pilih jenis akun');
-  return;
-}
-
-if (!jobRole) {
-  showError('register', 'Pilih role kamu di server');
-  return;
-}
-  // ... validasi lain...
+  if (password !== confirmPassword) {
+    showError('register', '❌ Konfirmasi password tidak cocok!');
+    return;
+  }
+  if (!accountRole) { showError('register', 'Pilih jenis akun'); return; }
+  if (!jobRole) { showError('register', 'Pilih role kamu di server'); return; }
 
   const btn = document.getElementById('registerBtn');
   btn.disabled = true;
   btn.innerText = '⏳ Loading...';
 
+  if (!USE_BACKEND) {
+    setTimeout(() => {
+      showSuccess('register', '✅ (Simulasi) Akun ' + username + ' berhasil dibuat!');
+      btn.disabled = false;
+      btn.innerText = 'Register';
+    }, 1000);
+    return;
+  }
+
   try {
-    const response = await fetch('/api/register', {
+    const response = await fetch(`${BACKEND_URL}/api/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-  username,
-  email,
-  password,
-  accountRole,
-  jobRole,
-  status: accountRole === 'member' ? 'active' : 'pending'
-})
+      body: JSON.stringify({
+        username, email, password, accountRole, jobRole,
+        status: accountRole === 'member' ? 'active' : 'pending'
+      })
     });
-
     const data = await response.json();
-
     if (response.ok) {
       showSuccess('register', '✅ Akun berhasil dibuat! Silakan login.');
-      setTimeout(() => {
-        switchTab('login');
-        document.getElementById('registerForm').reset();
-      }, 1500);
+      setTimeout(() => { switchTab('login'); document.getElementById('registerForm').reset(); }, 1500);
     } else {
       showError('register', data.message || 'Registrasi gagal');
     }
   } catch (err) {
-  showError(
-    'register',
-    '😅 Fitur daftar belum dibuat, ini baru UI saja. Maaf ya :('
-  );
-}
+    showError('register', '❌ Server Render belum aktif!');
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Register';
+  }
 });
 
+// --- OWNER LOGIN HANDLER ---
 document.getElementById('ownerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMessages();
 
   const password = document.getElementById('ownerPassword').value;
   const remember = document.getElementById('ownerRemember').checked;
-
   const btn = document.getElementById('ownerBtn');
   const originalText = btn.innerText;
   btn.innerText = '⏳ Verifying...';
   btn.disabled = true;
 
-  /* =========================
-     MODE SIMULASI (TANPA PY)
-     ========================= */
   if (!USE_BACKEND) {
     setTimeout(() => {
       if (password === 'EnderMan908') {
         showSuccess('owner', '✅ Owner login simulasi berhasil!');
-
-        // Simpan session dummy owner
         localStorage.setItem('token', 'owner_simulasi_token');
         localStorage.setItem('user_type', 'owner');
         localStorage.setItem('owner_username', 'XDNTEnderMan');
-
         if (remember) {
           localStorage.setItem('owner_remember', 'true');
-          localStorage.setItem(
-            'owner_token_expiry',
-            (Date.now() + 30 * 24 * 60 * 60 * 1000).toString()
-          );
+          localStorage.setItem('owner_token_expiry', (Date.now() + 30 * 24 * 60 * 60 * 1000).toString());
         }
-
-        setTimeout(() => {
-          window.location.href = 'owner.html'; // ⬅️ KE OWNER PAGE
-        }, 1200);
-
+        setTimeout(() => { window.location.href = 'owner.html'; }, 1200);
       } else {
         showError('owner', '❌ Password Owner salah (mode simulasi)');
       }
-
       btn.innerText = originalText;
       btn.disabled = false;
     }, 1000);
-
-    return; // ⛔ STOP, backend tidak jalan
+    return;
   }
 
-  /* =========================
-     MODE BACKEND (PYTHON)
-     ========================= */
   try {
-    const response = await fetch('http://127.0.0.1:5000/api/owner-login', {
+    const response = await fetch(`${BACKEND_URL}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: 'XDNTEnderMan',
-        password,
-        remember
-      })
+      body: JSON.stringify({ username: 'XDNTEnderMan', password, remember })
     });
-
     const data = await response.json();
-
     if (response.ok) {
       showSuccess('owner', '✅ Owner login berhasil!');
       localStorage.setItem('token', data.token);
       localStorage.setItem('user_type', 'owner');
       localStorage.setItem('owner_username', 'XDNTEnderMan');
-
-      setTimeout(() => {
-        window.location.href = 'owner.html';
-      }, 1200);
+      setTimeout(() => { window.location.href = 'owner.html'; }, 1200);
     } else {
       showError('owner', data.message || 'Password Owner salah');
     }
-
   } catch (err) {
-    showError('owner', 'Server belum aktif');
+    showError('owner', 'Server Render belum aktif');
   } finally {
     btn.innerText = originalText;
     btn.disabled = false;
   }
 });
-// --- AUTO-FILL LOGIN (jika ada remember) ---
+
 window.addEventListener('DOMContentLoaded', () => {
   const remember = localStorage.getItem('remember_user');
   if (remember) {
     document.getElementById('loginUsername').value = remember;
   }
-
-  // Check if owner token still valid
   const ownerRemember = localStorage.getItem('owner_remember');
   if (ownerRemember === 'true') {
     const expiry = localStorage.getItem('owner_token_expiry');
     if (expiry && new Date().getTime() < parseInt(expiry)) {
-      // Auto redirect to owner dashboard jika still valid
-      // Uncomment jika mau auto login:
-      // window.location.href = '/owner.html';
+       // Auto redirect logic here if needed
     }
   }
 });
+
 </script>
 
 </body>
-</html>
+  </html>
