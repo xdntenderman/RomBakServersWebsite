@@ -522,8 +522,13 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
       showSuccess('register', '✅ Berhasil! Silakan login.');
       setTimeout(() => { switchTab('login'); document.getElementById('registerForm').reset(); }, 1500);
     } else {
-      showError('register', data.message || 'Registrasi gagal');
-    }
+  // Ini biar muncul popup pesan dari server ("Oy Kampang!...")
+  alert(data.message); 
+  
+  // Opsional: Tetap tampilin merah-merah di bawah tombol juga
+  showError('register', data.message); 
+  }
+  
   } catch (err) {
     showError('register', '❌ Gagal konek ke Server');
   } finally {
